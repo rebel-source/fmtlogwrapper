@@ -2,7 +2,8 @@
 # `fmt` `Log` Wrapper
 
 ## In one line what is it?
-Log that looks like a simple `fmt.Print<xxx>` etc. Abstracting complex and extensible logging behind standard `fmt` methods.
+Log that looks like a simple `fmt.Print<xxx>` etc. Abstracting complex and extensible logging behind standard `fmt` methods.<br />
+Have multiple log destinations in an application, log objects ....
 
 ## Usage
 ```golang
@@ -65,7 +66,7 @@ See [Usage](#usage)
 * [You know how to set a `GOPATH`](https://github.com/golang/go/wiki/SettingGOPATH)
 
 ## Running stuff
-Ususal commands once your `GOPATH` is set
+Usual commands once your `GOPATH` is set
 
 ```bash
 go get github.com/rebel-source/fmtlogwrapper -v
