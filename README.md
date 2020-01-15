@@ -1,8 +1,8 @@
 
-# Log `fmt`
+# `fmt` `Log` Wrapper
 
 ## In one line what is it?
-Complex and extensible logging behind standard fmt.Print<xxx>
+Log that looks like a simple `fmt.Print<xxx>` etc. Complex and extensible logging behind standard `fmt` methods.
 
 ## Usage
 ```golang
