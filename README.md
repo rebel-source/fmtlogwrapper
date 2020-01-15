@@ -2,7 +2,7 @@
 # `fmt` `Log` Wrapper
 
 ## In one line what is it?
-Log that looks like a simple `fmt.Print<xxx>` etc. Complex and extensible logging behind standard `fmt` methods.
+Log that looks like a simple `fmt.Print<xxx>` etc. Abstracting complex and extensible logging behind standard `fmt` methods.
 
 ## Usage
 ```golang
