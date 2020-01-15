@@ -74,7 +74,7 @@ go get github.com/rebel-source/fmtlogwrapper -v
 ### Run the test
 Executing in root folder:
 ```bash
-go test -d -v fmtlogwrappertest
+go test -v fmtlogwrappertest
 ```
 
 ## Deployment
