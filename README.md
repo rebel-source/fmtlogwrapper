@@ -92,7 +92,7 @@ Just use it. Its one file ! :)
 
 * [Arjun Dhar](http://arjun-dhar.neurosys.biz/Arjun_Dhar.html) - *Initial work*
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/rebel-source/fmtlogwrapper/graphs/contributors) who participated in this project.
 
 ## License
 
