@@ -99,3 +99,6 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE.md](LIC
 
 ## Acknowledgments
 `TODO`
+
+## Additional references
+* [Logo Credit to creator @ flaticon.com](https://www.flaticon.com/free-icon/fist_128921)
