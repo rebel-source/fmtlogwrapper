@@ -75,7 +75,14 @@ go get github.com/rebel-source/fmtlogwrapper -v
 ### Run the test
 Executing in root folder:
 ```bash
-go test -v fmtlogwrappertest
+go test -v fmtlogwrapper
+```
+
+#### Troubleshoot GOAPTH
+Incase having issues finding running the package; can configure exclusively.
+Sample GOPATH setting on windows.
+```bash
+set GOPATH=%GOPATH%;<path till base folder parent of src>
 ```
 
 ## Deployment

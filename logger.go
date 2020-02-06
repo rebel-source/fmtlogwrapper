@@ -39,6 +39,8 @@ type Logger struct {
 	rlogger  *rlog.Logger
 	file     *os.File
 	writer   io.Writer
+
+	muted 	 bool
 }
 
 var AppLogger *Logger = NewLogger(LogSettings{
@@ -101,7 +103,7 @@ func (log *Logger) Close() {
 		return
 	}
 	fmt.Println("\n[Logger][Close]", path)
-	if log.rlogger != nil {
+	if log.rlogger != nil && !log.muted {
 		log.rlogger.Println("\n[Logger][Close]", path)
 	}
 	if log != nil && log.file != nil {
@@ -111,7 +113,7 @@ func (log *Logger) Close() {
 		log.Println("\n[Logger][Close] proxy")
 		if e := log.settings.Proxy.Close(); e != nil {
 			fmt.Println("\n[Logger][Close] Failed to Close Proxy logger")
-			if log.rlogger != nil {
+			if log.rlogger != nil && !log.muted {
 				log.rlogger.Println("\n[Logger][Close] Failed to Close Proxy logger")
 			}
 		}
@@ -146,6 +148,11 @@ func (log *Logger) Open() {
 		log.file = f
 		log.writer = io.Writer(f)
 	}
+}
+
+// Can supress logging to File while muted
+func (log *Logger) MuteWrite(mute bool) {
+	log.muted = mute
 }
 
 /*
@@ -185,7 +192,9 @@ func (log *Logger) Log(logRec map[string]interface{}) {
 }
 
 func (log *Logger) LogStr(str string) {
-	log.rlogger.Println(str)
+	if  !log.muted {
+		log.rlogger.Println(str)
+	}
 }
 
 // Following serves as a convenient replacement for fmt.<...>
@@ -193,18 +202,24 @@ func (log *Logger) LogStr(str string) {
 // Replacement for fmt.Printf
 func (log *Logger) Printf(str string, params ...interface{}) {
 	fmt.Printf(str, params...) //Send to std console always
-	log.rlogger.Printf(str, params...)
+	if  !log.muted {
+		log.rlogger.Printf(str, params...)
+	}
 }
 
 // Replacement for fmt.Println
 func (log *Logger) Println(a ...interface{}) {
 	fmt.Println(a...) //Send to std console always
-	log.rlogger.Println(a...)
+	if  !log.muted {
+		log.rlogger.Println(a...)
+	}
 }
 
 func (log *Logger) Errorf(str string, params ...interface{}) {
 	fmt.Errorf(str, params...)
-	log.rlogger.Fatalf(str, params...)
+	if  !log.muted {
+		log.rlogger.Fatalf(str, params...)
+	}
 }
 
 //A proxy that can log to a network device
@@ -215,4 +230,25 @@ type ProxyLogger interface {
 
 	//Any closingoperations on the proxy
 	Close() error
+}
+
+/////////////////////////////// Multiple Loggers
+var loggers map[string]*Logger = make(map[string]*Logger)
+
+
+/*
+ Maintains a reference to the logger within the logger framework
+*/
+func InitContextLogger(contextId string, settings LogSettings) *Logger {
+	logger := NewLogger(settings)
+	loggers[contextId] = logger
+	return logger
+}
+
+
+/*
+ Take al lthe references and do what you want ! Be Happy!
+*/
+func ContextLoggers() map[string]*Logger {
+	return loggers
 }
