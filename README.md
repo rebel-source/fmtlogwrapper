@@ -52,6 +52,39 @@ PASS
 ok      fmtlogwrapper   0.341s
 ```
 
+**Multiple Context Loggers**
+```golang
+func TestMultipleContextLoggers(t *testing.T) {
+	log1 := /*log.*/InitContextLogger("L1", /*log.*/LogSettings{
+		FilePath: ".\\log\\app-1.log",
+	})
+
+	log2 := /*log.*/InitContextLogger("L2", /*log.*/LogSettings{
+		FilePath: ".\\log\\app-2.log",
+	})
+
+	log1.Println("STEP 11")
+	log2.Println("STEP 12")
+
+	log1.MuteWrite(true)
+	log2.MuteWrite(true)
+	log1.Println("STEP 21")  // This wont be written only on console
+	log2.Println("STEP 22")  // This wont be written only on console
+
+	// Test can get it afresh from the context
+	log1 = /*log.*/ContextLoggers()["L1"]
+	log2 = /*log.*/ContextLoggers()["L2"]
+
+	log1.MuteWrite(false)
+	log2.MuteWrite(false)
+	log1.Println("STEP 31")
+	log2.Println("STEP 32")	
+
+	defer /*log.*/log1.Close()
+	defer /*log.*/log2.Close()
+}
+```
+
 ## Why do I need it?
 I see developers in `golang` struggling to use and then switch between Standard GoLang [log](https://golang.org/pkg/log/), a framework like [logrus](https://github.com/sirupsen/logrus) and even writing prototype code using `fmt`. 
 
