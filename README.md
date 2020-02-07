@@ -11,6 +11,12 @@ Have multiple log destinations in an application, log objects ....
 * The first version was production used by April 2019, Multi threaded one, end Jan 2020.
 * ...On going reviews and testing. Please test and improve ! :)
 
+## Next Steps
+* Add `Appender` Interface
+* Move current Default File writes to a `File Appender` and plug that in as a default
+* Build a `MongoDB Appender`
+* Build a `Fanout Appender` to support joining multiple `Appender`s
+
 ## Usage
 
 ### Simple
