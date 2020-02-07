@@ -228,7 +228,7 @@ func (log *Logger) printlnToBuffer(strs ...interface{}) bool {
 	if log.buffered {
 		log.bufferMux.Lock()
 		for _, s := range strs {
-			log.buffer = log.buffer + fmt.Sprintf("%v\n", s)
+			log.buffer = log.buffer + fmt.Sprintf("%v ", s)
 		}		
 		log.bufferMux.Unlock()
 		return true
