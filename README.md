@@ -6,6 +6,8 @@ Log that looks like a simple `fmt.Print<xxx>` etc. Abstracting complex and exten
 Have multiple log destinations in an application, log objects ....
 
 ## Usage
+
+### Simple
 ```golang
 import(
 	log "github.com/rebel-source/fmtlogwrapper"
@@ -52,7 +54,7 @@ PASS
 ok      fmtlogwrapper   0.341s
 ```
 
-**Multiple Context Loggers**
+## Multiple Context Loggers
 ```golang
 func TestMultipleContextLoggers(t *testing.T) {
 	log1 := /*log.*/InitContextLogger("L1", /*log.*/LogSettings{
@@ -84,6 +86,115 @@ func TestMultipleContextLoggers(t *testing.T) {
 	defer /*log.*/log2.Close()
 }
 ```
+
+## Logging in a Multi Threaded environment
+```golang
+func TestBufferedLogger(t *testing.T) {
+	fmt.Println("[TesBufferedLogger]");
+	/*
+	 We have 2 loggers writing to the same file
+	 We want to ensure a Atomic operation in each does not mix with the other
+	*/
+
+	log1 := /*log.*/InitContextLogger("L1", /*log.*/LogSettings{
+		FilePath: ".\\log\\app-same.log",
+	})
+	log2 := /*log.*/InitContextLogger("L2", /*log.*/LogSettings{
+		FilePath: ".\\log\\app-same.log",
+	})
+
+	log1.WriteToBuffer(true)
+	log2.WriteToBuffer(true)
+
+	log1.Println("STEP 1-A")
+	log2.Println("STEP 2-A")
+	log1.Println("STEP 1-B")
+	log2.Println("STEP 2-B")
+	log1.Println("STEP 1-C")
+	log2.Println("STEP 2-C")	
+
+	log1.WriteToBuffer(false)
+	log2.WriteToBuffer(false)
+	// At this point buffer so far should be comitted but logs for 1 & 2 should be visible in continious lines for each group
+	// We can also explicitly call log<x>.CommitBuffer()
+
+	//Now on will appear in sequence of this being written
+	log1.Println("STEP 1-D")
+	log2.Println("STEP 2-D")
+	log1.Println("STEP 1-E")
+	log2.Println("STEP 2-E")
+
+	defer /*log.*/log1.Close() //If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
+	defer /*log.*/log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.
+}
+```
+
+Expected Output of above:
+```
+STEP 1-A
+STEP 1-B
+STEP 1-C
+
+STEP 2-A
+STEP 2-B
+STEP 2-C
+
+STEP 1-D
+STEP 2-D
+STEP 1-E
+STEP 2-E
+
+[Logger][Close] .\log\app-same.log
+
+[Logger][Close] .\log\app-same.log
+STEP 1-A STEP 1-B STEP 1-C 
+STEP 2-A STEP 2-B STEP 2-C 
+STEP 1-D
+STEP 2-D
+STEP 1-E
+STEP 2-E
+
+[Logger][Close] .\log\app-same.log
+
+[Logger][Close] .\log\app-same.log
+```
+
+### Writing context safe logs
+Below is an example, where even the same context and buffer for a cotext may not save you; if within the context your threads write to the same buffer.
+To get around this, @ your code level you can employ a simple trick as follows
+
+```golang
+/*
+ @param contextID string file name depends on this
+
+ @param taskId - Allows multiple processes to write to same file;
+ however if we plan to use buffered mode, then each can independently maintain its own buffer.
+ Use "" for common.
+*/
+func InitMyLogger(contextID string, taskId string) *log.Logger {
+	logger := log.NewLogger(log.LogSettings{
+		FilePath: ".\\log\\my-process-" + contextID + ".json",
+	})
+	log.ContextLoggers()[contextID+"."+taskId] = logger
+	return logger
+}
+
+/*
+ @param contextID string file name depends on this
+
+ @param taskId - Allows multiple processes to write to same file;
+ however if we plan to use buffered mode, then each can independently maintain its own buffer.
+ Use "" for common.
+*/
+func MyLogger(contextID string, taskId string) *log.Logger {
+	logger := log.ContextLoggers()[contextID+"."+taskId]
+	if logger == nil {
+		logger = InitMyLogger(contextID, taskId)
+	}
+	return logger
+}
+```
+The above will ensure a safe virtual environment and buffer for each sub-task, even though they maybe writing to the same file in a process/context.
 
 ## Why do I need it?
 I see developers in `golang` struggling to use and then switch between Standard GoLang [log](https://golang.org/pkg/log/), a framework like [logrus](https://github.com/sirupsen/logrus) and even writing prototype code using `fmt`. 

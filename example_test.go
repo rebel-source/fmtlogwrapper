@@ -98,7 +98,7 @@ func TestBufferedLogger(t *testing.T) {
 	log2.Println("STEP 2-E")
 
 	defer /*log.*/log1.Close() //If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
-	defer /*log.*/log2.Close()		
+	defer /*log.*/log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.	
 }
 
 // TODO: Add test for When switching from Buffered mode to non-buffered
