@@ -89,6 +89,7 @@ func TestBufferedLogger(t *testing.T) {
 	log1.WriteToBuffer(false)
 	log2.WriteToBuffer(false)
 	// At this point buffer so far should be comitted but logs for 1 & 2 should be visible in continious lines for each group
+	// We can also explicitly call log<x>.CommitBuffer()
 
 	//Now on will appear in sequence of this being written
 	log1.Println("STEP 1-D")
@@ -96,7 +97,7 @@ func TestBufferedLogger(t *testing.T) {
 	log1.Println("STEP 1-E")
 	log2.Println("STEP 2-E")
 
-	defer /*log.*/log1.Close()
+	defer /*log.*/log1.Close() //If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
 	defer /*log.*/log2.Close()		
 }
 
