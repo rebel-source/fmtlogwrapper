@@ -5,6 +5,12 @@
 Log that looks like a simple `fmt.Print<xxx>` etc. Abstracting complex and extensible logging behind standard `fmt` methods.<br />
 Have multiple log destinations in an application, log objects ....
 
+## How stable is it?
+* Been used in Real time IoT situations dealing with Hardware event related logs.
+* Big Data situations, multi threaded applications of complex workflow audits showing coherent logs for each channel.
+* The first version was production used by April 2019, Multi threaded one, end Jan 2020.
+* ...On going reviews and testing. Please test and improve ! :)
+
 ## Usage
 
 ### Simple
@@ -131,24 +137,14 @@ func TestBufferedLogger(t *testing.T) {
 
 Expected Output of above:
 ```
-STEP 1-A
-STEP 1-B
-STEP 1-C
+STEP 1-A 
+STEP 1-B 
+STEP 1-C 
 
-STEP 2-A
-STEP 2-B
-STEP 2-C
+STEP 2-A 
+STEP 2-B 
+STEP 2-C 
 
-STEP 1-D
-STEP 2-D
-STEP 1-E
-STEP 2-E
-
-[Logger][Close] .\log\app-same.log
-
-[Logger][Close] .\log\app-same.log
-STEP 1-A STEP 1-B STEP 1-C 
-STEP 2-A STEP 2-B STEP 2-C 
 STEP 1-D
 STEP 2-D
 STEP 1-E

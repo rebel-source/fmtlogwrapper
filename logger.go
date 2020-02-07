@@ -48,6 +48,10 @@ type Logger struct {
 	buffer	string //TODO: Ability to link this to some sort of IMDG 
 }
 
+// Despite all other aspects; its still possible that while 2 Logger instances
+// are CommitBuffer(), they overwrite each other physically. To ensure low level mutex
+var sameTargetMutextMap map[string]sync.Mutex = make(map[string]sync.Mutex)
+
 var AppLogger *Logger /*= NewLogger(LogSettings{
 	FilePath: ".\\log\\app.log", // Default path
 })*/
@@ -229,7 +233,8 @@ func (log *Logger) printlnToBuffer(strs ...interface{}) bool {
 		log.bufferMux.Lock()
 		for _, s := range strs {
 			log.buffer = log.buffer + fmt.Sprintf("%v ", s)
-		}		
+		}
+		log.buffer = log.buffer + string('\n') // dont forget the ln part :)
 		log.bufferMux.Unlock()
 		return true
 	} else {
@@ -287,12 +292,17 @@ func (log *Logger) ClearBuffer() {
 /*
  Will commit any logs in buffer. Is thread safe and uses a mutex over the buffer while comitting.
  This will override write to disk "Logger.muted" flag; even if muted = true, this will write to Disk
+
+ @see https://gophers.slack.com/archives/C029RQSEE/p1581069207209700
 */
-func (log *Logger) CommitBuffer() {
+func (log *Logger) CommitBuffer() {	
 	log.bufferMux.Lock()
+	var targetMux sync.Mutex = sameTargetMutextMap[log.settings.FilePath]
+	targetMux.Lock()
+	defer targetMux.Unlock()
+	defer log.bufferMux.Unlock()
 	log.rlogger.Println(log.buffer)
-	log.ClearBuffer()
-	log.bufferMux.Unlock()
+	log.ClearBuffer()	
 }
 
 func (log *Logger) GetBuffer() string {
