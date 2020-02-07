@@ -3,6 +3,7 @@ package fmtlogwrapper
 import(
 	"testing"
 	//log "fmtlogwrapper"
+	"fmt"
 )
 
 func TestUsage1(t *testing.T) {
@@ -39,13 +40,13 @@ func TestMultipleContextLoggers(t *testing.T) {
 		FilePath: ".\\log\\app-2.log",
 	})
 
-	log1.Println("STEP 11")
-	log2.Println("STEP 12")
+	log1.Println("STEP 1-A")
+	log2.Println("STEP 2-A")
 
 	log1.MuteWrite(true)
 	log2.MuteWrite(true)
-	log1.Println("STEP 21")  // This wont be written only on console
-	log2.Println("STEP 22")  // This wont be written only on console
+	log1.Println("STEP 1-B")  // This wont be written only on console
+	log2.Println("STEP 2-B")  // This wont be written only on console
 
 	// Test can get it afresh from the context
 	log1 = /*log.*/ContextLoggers()["L1"]
@@ -53,9 +54,50 @@ func TestMultipleContextLoggers(t *testing.T) {
 
 	log1.MuteWrite(false)
 	log2.MuteWrite(false)
-	log1.Println("STEP 31")
-	log2.Println("STEP 32")	
+	log1.Println("STEP 1-C")
+	log2.Println("STEP 2-C")	
 
 	defer /*log.*/log1.Close()
 	defer /*log.*/log2.Close()
 }
+
+
+func TestBufferedLogger(t *testing.T) {
+	fmt.Println("[TesBufferedLogger]");
+	/*
+	 We have 2 loggers writing to the same file
+	 We want to ensure a Atomic operation in each does not mix with the other
+	*/
+
+	log1 := /*log.*/InitContextLogger("L1", /*log.*/LogSettings{
+		FilePath: ".\\log\\app-same.log",
+	})
+	log2 := /*log.*/InitContextLogger("L2", /*log.*/LogSettings{
+		FilePath: ".\\log\\app-same.log",
+	})
+
+	log1.WriteToBuffer(true)
+	log2.WriteToBuffer(true)
+
+	log1.Println("STEP 1-A")
+	log2.Println("STEP 2-A")
+	log1.Println("STEP 1-B")
+	log2.Println("STEP 2-B")
+	log1.Println("STEP 1-C")
+	log2.Println("STEP 2-C")	
+
+	log1.WriteToBuffer(false)
+	log2.WriteToBuffer(false)
+	// At this point buffer so far should be comitted but logs for 1 & 2 should be visible in continious lines for each group
+
+	//Now on will appear in sequence of this being written
+	log1.Println("STEP 1-D")
+	log2.Println("STEP 2-D")
+	log1.Println("STEP 1-E")
+	log2.Println("STEP 2-E")
+
+	defer /*log.*/log1.Close()
+	defer /*log.*/log2.Close()		
+}
+
+// TODO: Add test for When switching from Buffered mode to non-buffered

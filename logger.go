@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"time"
+	"sync"
 
 	rlog "log"
 
@@ -41,11 +42,22 @@ type Logger struct {
 	writer   io.Writer
 
 	muted 	 bool
+
+	buffered bool // if true, will add to buffer and only write on Commit or Close
+	bufferMux sync.Mutex // Lock on the buffer
+	buffer	string //TODO: Ability to link this to some sort of IMDG 
 }
 
-var AppLogger *Logger = NewLogger(LogSettings{
+var AppLogger *Logger /*= NewLogger(LogSettings{
 	FilePath: ".\\log\\app.log", // Default path
-})
+})*/
+
+// app.log is not always desirable, hence only create it when explicitly invoked
+func InitAppLogger() {
+	AppLogger = NewLogger(LogSettings{
+		FilePath: ".\\log\\app.log", // Default path
+	})
+}
 
 // Create New instance of Logger
 /*
@@ -95,6 +107,11 @@ func getWriter(logPath string) (io.Writer, error, *os.File) {
 // depending on what the application is doing : JOB, IDLE, using a PROXY so while closing we dont know
 // So approach nil conditions with caution (redundancy in code is required)
 func (log *Logger) Close() {
+	//Ensure any uncomitted stuff lingering in buffer, is committed
+	if len(log.buffer) > 0 {
+		log.CommitBuffer()
+	}
+
 	path := ""
 	if log != nil {
 		path = log.settings.FilePath
@@ -191,6 +208,35 @@ func (log *Logger) Log(logRec map[string]interface{}) {
 	}
 }
 
+/*
+ If Logger.buffered is true will write to Logger.buffer (respecting Logger.bufferMux) 
+ and return true
+*/
+func (log *Logger) printfToBuffer(str string, params ...interface{}) bool {
+	if log.buffered {
+		log.bufferMux.Lock()
+		finalStr := fmt.Sprintf(str, params...)
+		log.buffer = log.buffer + finalStr
+		log.bufferMux.Unlock()
+		return true
+	} else {
+		return false
+	}
+}
+//TODO: Combine above 2, almost same code. mak it more elegant.
+func (log *Logger) printlnToBuffer(strs ...interface{}) bool {
+	if log.buffered {
+		log.bufferMux.Lock()
+		for _, s := range strs {
+			log.buffer = log.buffer + fmt.Sprintf("%v\n", s)
+		}		
+		log.bufferMux.Unlock()
+		return true
+	} else {
+		return false
+	}
+}
+
 func (log *Logger) LogStr(str string) {
 	if  !log.muted {
 		log.rlogger.Println(str)
@@ -202,7 +248,7 @@ func (log *Logger) LogStr(str string) {
 // Replacement for fmt.Printf
 func (log *Logger) Printf(str string, params ...interface{}) {
 	fmt.Printf(str, params...) //Send to std console always
-	if  !log.muted {
+	if  !log.muted && !log.printfToBuffer(str, params...) {
 		log.rlogger.Printf(str, params...)
 	}
 }
@@ -210,14 +256,14 @@ func (log *Logger) Printf(str string, params ...interface{}) {
 // Replacement for fmt.Println
 func (log *Logger) Println(a ...interface{}) {
 	fmt.Println(a...) //Send to std console always
-	if  !log.muted {
+	if  !log.muted && !log.printlnToBuffer(a...) {
 		log.rlogger.Println(a...)
 	}
 }
 
 func (log *Logger) Errorf(str string, params ...interface{}) {
 	fmt.Errorf(str, params...)
-	if  !log.muted {
+	if  !log.muted && !log.printfToBuffer(str, params...) {
 		log.rlogger.Fatalf(str, params...)
 	}
 }
@@ -232,6 +278,39 @@ type ProxyLogger interface {
 	Close() error
 }
 
+
+/////////////////////////////// Buffering + Commit
+func (log *Logger) ClearBuffer() {
+	log.buffer = ""
+}
+
+/*
+ Will commit any logs in buffer. Is thread safe and uses a mutex over the buffer while comitting.
+ This will override write to disk "Logger.muted" flag; even if muted = true, this will write to Disk
+*/
+func (log *Logger) CommitBuffer() {
+	log.bufferMux.Lock()
+	log.rlogger.Println(log.buffer)
+	log.ClearBuffer()
+	log.bufferMux.Unlock()
+}
+
+func (log *Logger) GetBuffer() string {
+	return log.buffer
+}
+
+
+/*
+ Buffer write is not intended to be thread safe. If you need it, make your own wrapper.
+*/
+func (log *Logger) WriteToBuffer(toBuffer bool) {
+	log.buffered = toBuffer
+	if !toBuffer {
+		// no longer writing to buffer so commit any state instantly
+		log.CommitBuffer()		
+	}
+}
+
 /////////////////////////////// Multiple Loggers
 var loggers map[string]*Logger = make(map[string]*Logger)
 
@@ -240,6 +319,9 @@ var loggers map[string]*Logger = make(map[string]*Logger)
  Maintains a reference to the logger within the logger framework
 */
 func InitContextLogger(contextId string, settings LogSettings) *Logger {
+	if loggers[contextId]!= nil {
+		fmt.Printf("\n[WARN][Logger][InitContextLogger]Logger with contextId %s was previously also assigned. Check your code for mutiple InitContextLogger in the same Context", contextId)
+	}
 	logger := NewLogger(settings)
 	loggers[contextId] = logger
 	return logger
