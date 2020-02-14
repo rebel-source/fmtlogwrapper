@@ -41,7 +41,8 @@ type Logger struct {
 	file     *os.File
 	writer   io.Writer
 
-	muted 	 bool
+	write_muted 	 bool
+	console_muted	 bool
 
 	buffered bool // if true, will add to buffer and only write on Commit or Close
 	bufferMux sync.Mutex // Lock on the buffer
@@ -124,7 +125,7 @@ func (log *Logger) Close() {
 		return
 	}
 	fmt.Println("\n[Logger][Close]", path)
-	if log.rlogger != nil && !log.muted {
+	if log.rlogger != nil && !log.write_muted {
 		log.rlogger.Println("\n[Logger][Close]", path)
 	}
 	if log != nil && log.file != nil {
@@ -134,7 +135,7 @@ func (log *Logger) Close() {
 		log.Println("\n[Logger][Close] proxy")
 		if e := log.settings.Proxy.Close(); e != nil {
 			fmt.Println("\n[Logger][Close] Failed to Close Proxy logger")
-			if log.rlogger != nil && !log.muted {
+			if log.rlogger != nil && !log.write_muted {
 				log.rlogger.Println("\n[Logger][Close] Failed to Close Proxy logger")
 			}
 		}
@@ -171,9 +172,13 @@ func (log *Logger) Open() {
 	}
 }
 
-// Can supress logging to File while muted
+// Can supress logging to File while write_muted
 func (log *Logger) MuteWrite(mute bool) {
-	log.muted = mute
+	log.write_muted = mute
+}
+
+func (log *Logger) MuteConsole(mute bool) {
+	log.console_muted = mute
 }
 
 /*
@@ -243,7 +248,7 @@ func (log *Logger) printlnToBuffer(strs ...interface{}) bool {
 }
 
 func (log *Logger) LogStr(str string) {
-	if  !log.muted {
+	if  !log.write_muted {
 		log.rlogger.Println(str)
 	}
 }
@@ -252,23 +257,29 @@ func (log *Logger) LogStr(str string) {
 
 // Replacement for fmt.Printf
 func (log *Logger) Printf(str string, params ...interface{}) {
-	fmt.Printf(str, params...) //Send to std console always
-	if  !log.muted && !log.printfToBuffer(str, params...) {
+	if !log.console_muted {
+		fmt.Printf(str, params...) //Send to std console always
+	}
+	if  !log.write_muted && !log.printfToBuffer(str, params...) {
 		log.rlogger.Printf(str, params...)
 	}
 }
 
 // Replacement for fmt.Println
 func (log *Logger) Println(a ...interface{}) {
-	fmt.Println(a...) //Send to std console always
-	if  !log.muted && !log.printlnToBuffer(a...) {
+	if !log.console_muted {
+		fmt.Println(a...) //Send to std console always
+	}
+	if  !log.write_muted && !log.printlnToBuffer(a...) {
 		log.rlogger.Println(a...)
 	}
 }
 
 func (log *Logger) Errorf(str string, params ...interface{}) {
-	fmt.Errorf(str, params...)
-	if  !log.muted && !log.printfToBuffer(str, params...) {
+	if !log.console_muted {
+		fmt.Errorf(str, params...)
+	}
+	if  !log.write_muted && !log.printfToBuffer(str, params...) {
 		log.rlogger.Fatalf(str, params...)
 	}
 }
@@ -291,7 +302,7 @@ func (log *Logger) ClearBuffer() {
 
 /*
  Will commit any logs in buffer. Is thread safe and uses a mutex over the buffer while comitting.
- This will override write to disk "Logger.muted" flag; even if muted = true, this will write to Disk
+ This will override write to disk "Logger.write_muted" flag; even if write_muted = true, this will write to Disk
 
  @see https://gophers.slack.com/archives/C029RQSEE/p1581069207209700
 */
