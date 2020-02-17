@@ -35,7 +35,7 @@ type LogSettings struct {
 
 // A wrapper structure over core logger and settings, file, writers associated with it
 type Logger struct {
-	settings LogSettings
+	Settings LogSettings
 	slogger  *slog.Logger
 	rlogger  *rlog.Logger
 	file     *os.File
@@ -85,7 +85,7 @@ slog.Infof("Can't load config file %s/app.config. Error: %v", resDir, err)
 */
 func NewLogger(settings LogSettings) *Logger {
 	l := &Logger{
-		settings: settings,
+		Settings: settings,
 		slogger:  &slog.Logger{},
 		rlogger:  &rlog.Logger{},
 	}
@@ -119,7 +119,7 @@ func (log *Logger) Close() {
 
 	path := ""
 	if log != nil {
-		path = log.settings.FilePath
+		path = log.Settings.FilePath
 	} else {
 		fmt.Println("\n[Logger][Close] Not open; nothing to close")
 		return
@@ -131,28 +131,28 @@ func (log *Logger) Close() {
 	if log != nil && log.file != nil {
 		defer log.file.Close() //defer since we need to close Proxy logger also
 	}
-	if log.settings.Proxy != nil {
+	if log.Settings.Proxy != nil {
 		log.Println("\n[Logger][Close] proxy")
-		if e := log.settings.Proxy.Close(); e != nil {
+		if e := log.Settings.Proxy.Close(); e != nil {
 			fmt.Println("\n[Logger][Close] Failed to Close Proxy logger")
 			if log.rlogger != nil && !log.write_muted {
 				log.rlogger.Println("\n[Logger][Close] Failed to Close Proxy logger")
 			}
 		}
-		log.settings.Proxy = nil
+		log.Settings.Proxy = nil
 	}
 }
 
 func (log *Logger) GetProxy() ProxyLogger {
-	return log.settings.Proxy
+	return log.Settings.Proxy
 }
 
 // Set the Proxy logger and Init() it
 func (log *Logger) SetProxy(proxy ProxyLogger) {
-	if proxy == nil && log.settings.Proxy == nil {
+	if proxy == nil && log.Settings.Proxy == nil {
 		return //de-rferenced  anyway, quit
 	}
-	log.settings.Proxy = proxy
+	log.Settings.Proxy = proxy
 	if proxy != nil {
 		if e := proxy.Init(); e != nil {
 			log.Println("\n[Logger][SetProxy] Faile to initialize Proxy logger")
@@ -162,9 +162,9 @@ func (log *Logger) SetProxy(proxy ProxyLogger) {
 
 // Open an existing log that was closed
 func (log *Logger) Open() {
-	f, err := os.OpenFile(log.settings.FilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(log.Settings.FilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		fmt.Printf("\n[Logger][Open] error re-opening file %s: %v. Dumping logs on screen...\n", log.settings.FilePath, err)
+		fmt.Printf("\n[Logger][Open] error re-opening file %s: %v. Dumping logs on screen...\n", log.Settings.FilePath, err)
 		log.writer = os.Stdout //Default to console
 	} else {
 		log.file = f
@@ -206,12 +206,12 @@ func (log *Logger) Log(logRec map[string]interface{}) {
 	timeStr := timestamp.Format("02-01-2006 15:04:05" /*time.RFC1123*/) //dd-mm-yyyy hh:MM:ss
 	logRec["datetime"] = timeStr
 	logRec["epoch"] = timestamp.Unix()
-	logRec["meta"] = log.settings.JobRecMeta
+	logRec["meta"] = log.Settings.JobRecMeta
 
 	log.slogger.WithFields(logRec).Info("")
 
-	if log.settings.Proxy != nil {
-		if err := log.settings.Proxy.Log(logRec); err != nil {
+	if log.Settings.Proxy != nil {
+		if err := log.Settings.Proxy.Log(logRec); err != nil {
 			log.Printf("\n[ERROR][Logger][Log]Could not send this log to server: %v", logRec)
 		}
 	}
@@ -308,7 +308,7 @@ func (log *Logger) ClearBuffer() {
 */
 func (log *Logger) CommitBuffer() {	
 	log.bufferMux.Lock()
-	var targetMux sync.Mutex = sameTargetMutextMap[log.settings.FilePath]
+	var targetMux sync.Mutex = sameTargetMutextMap[log.Settings.FilePath]
 	targetMux.Lock()
 	defer targetMux.Unlock()
 	defer log.bufferMux.Unlock()
