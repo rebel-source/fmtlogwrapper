@@ -15,21 +15,37 @@ Open a file and ensure if it doesnt exist @ the path, then create the path Dir +
 func OpenFilePathExists(path string) (*os.File, error) {
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		fmt.Printf("\n[Logger][getWriter] File not found creating file @ %s: %v\n", path, err)
-		os.MkdirAll(filepath.Dir(path), os.ModePerm)
-		_, err := os.Create(path)
+		fmt.Printf("\n[OpenFilePathExists] File not found creating file @ %s: %v\n", path, err)
+		parentPath := filepath.Dir(path)
+		if err := os.MkdirAll(parentPath, os.ModePerm); err != nil {
+			fmt.Printf("\n[OpenFilePathExists] Parent path could not be created @ %v\n", err)
+		}
+		_, err = os.Create(path)
 		if err != nil {
-			fmt.Printf("\n[Logger][getWriter] error creating file path %s: %v\n", path, err)
+			fmt.Printf("\n[OpenFilePathExists] error creating file path %s: %v\n", path, err)
 			return nil, err
+		} else {
+			//verify the file is created (optional)
+			if !DoesFileExist(path) {
+				fmt.Printf("\n[OpenFilePathExists] Tried creating file @ path but failed %s: %v\n", path, err)
+				return nil, err
+			} else {
+				// Fresh connection
+				f.Close()
+				f, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			}
 		}
 	}
-	//verify the file is created (optional)
-	_, e2 := os.Stat(path)
-	if os.IsNotExist(e2) {
-		fmt.Printf("\n[Logger][getWriter] Tried creating file @ path but failed %s: %v\n", path, err)
-		return nil, e2
-	}
 	return f, err
+}
+
+func DoesFileExist(path string) bool {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	} else {
+		return true
+	}
 }
 
 func GetType(obj interface{}) string {
