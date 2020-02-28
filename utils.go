@@ -9,6 +9,8 @@ import (
 
 /*
 Open a file and ensure if it doesnt exist @ the path, then create the path Dir + file
+
+@return *os.File is success else nill, error
 */
 func OpenFilePathExists(path string) (*os.File, error) {
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -17,10 +19,16 @@ func OpenFilePathExists(path string) (*os.File, error) {
 		os.MkdirAll(filepath.Dir(path), os.ModePerm)
 		_, err := os.Create(path)
 		if err != nil {
-		fmt.Printf("\n[Logger][getWriter] error creating log path %s: %v\n", path, err)
-			return nil,err
+			fmt.Printf("\n[Logger][getWriter] error creating file path %s: %v\n", path, err)
+			return nil, err
+		}
 	}
-}
+	//verify the file is created (optional)
+	_, e2 := os.Stat(path)
+	if os.IsNotExist(e2) {
+		fmt.Printf("\n[Logger][getWriter] Tried creating file @ path but failed %s: %v\n", path, err)
+		return nil, e2
+	}
 	return f, err
 }
 
