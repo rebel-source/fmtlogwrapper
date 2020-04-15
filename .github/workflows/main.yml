@@ -1,4 +1,4 @@
-name: Sample workflow using golang-security-action
+name: golang-security-action
 
 # on: [push, pull_request]
 on: [push]
