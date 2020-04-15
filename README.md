@@ -1,6 +1,12 @@
 
 # `fmt` `Log` Wrapper
 
+<!-- shields.io - https://shields.io/category/analysis -->
+![GoSec Verified](https://img.shields.io/badge/gosec-verified-brightgreen)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/rebel-source/fmtlogwrapper)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/rebel-source/fmtlogwrapper)
+![Maintenance](https://img.shields.io/maintenance/yes/2020)
+
 ## In one line what is it?
 Log that looks like a simple `fmt.Print<xxx>` etc. Abstracting complex and extensible logging behind standard `fmt` methods.<br />
 Have multiple log destinations in an application, log objects ....
