@@ -34,7 +34,7 @@ func OpenFilePathExists(path string) (*os.File, error) {
 				if e := f.Close(); e!=nil {
 					fmt.Println("\n[OpenFilePathExists][ERROR]", e)
 				}				
-				f, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600)
+				f, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600) //0666
 			}
 		}
 	}
