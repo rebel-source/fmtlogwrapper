@@ -6,7 +6,7 @@
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/rebel-source/fmtlogwrapper)
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/rebel-source/fmtlogwrapper)
 ![Maintenance](https://img.shields.io/maintenance/yes/2020)
-![golang-security-action](https://github.com/rebel-source/fmtlogwrapper/workflows/golang-security-action/badge.svg)
+![golang-security-action](https://github.com/rebel-source/fmtlogwrapper/workflows/golang-security-action/badge.svg?event=push)
 
 ## In one line what is it?
 Log that looks like a simple `fmt.Print<xxx>` etc. Abstracting complex and extensible logging behind standard `fmt` methods.<br />
