@@ -128,9 +128,6 @@ func (log *Logger) Close() {
 	if log.rlogger != nil && !log.write_muted {
 		log.rlogger.Println("\n[Logger][Close]", path)
 	}
-	if log != nil && log.file != nil {
-		defer log.file.Close() //defer since we need to close Proxy logger also
-	}
 	if log.Settings.Proxy != nil {
 		log.Println("\n[Logger][Close] proxy")
 		if e := log.Settings.Proxy.Close(); e != nil {
@@ -141,6 +138,11 @@ func (log *Logger) Close() {
 		}
 		log.Settings.Proxy = nil
 	}
+	if log != nil && log.file != nil {
+		if e := log.file.Close(); e!=nil { // since we need to close Proxy logger also
+			fmt.Println("\n[Logger][Close][ERROR]", e)
+		}
+	}	
 }
 
 func (log *Logger) GetProxy() ProxyLogger {
@@ -162,7 +164,7 @@ func (log *Logger) SetProxy(proxy ProxyLogger) {
 
 // Open an existing log that was closed
 func (log *Logger) Open() {
-	f, err := os.OpenFile(log.Settings.FilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(log.Settings.FilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600)
 	if err != nil {
 		fmt.Printf("\n[Logger][Open] error re-opening file %s: %v. Dumping logs on screen...\n", log.Settings.FilePath, err)
 		log.writer = os.Stdout //Default to console
@@ -276,8 +278,10 @@ func (log *Logger) Println(a ...interface{}) {
 }
 
 func (log *Logger) Errorf(str string, params ...interface{}) {
-	if !log.console_muted {
-		fmt.Errorf(str, params...)
+	if !log.console_muted {		
+		if e := fmt.Errorf(str, params...); e!=nil {
+			fmt.Println("\n[Logger][Errorf][ERROR]", e)
+		}		
 	}
 	if  !log.write_muted && !log.printfToBuffer(str, params...) {
 		log.rlogger.Fatalf(str, params...)

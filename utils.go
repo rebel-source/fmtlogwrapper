@@ -13,7 +13,7 @@ Open a file and ensure if it doesnt exist @ the path, then create the path Dir +
 @return *os.File is success else nill, error
 */
 func OpenFilePathExists(path string) (*os.File, error) {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600) //0666
 	if err != nil {
 		fmt.Printf("\n[OpenFilePathExists] File not found creating file @ %s: %v\n", path, err)
 		parentPath := filepath.Dir(path)
@@ -30,9 +30,11 @@ func OpenFilePathExists(path string) (*os.File, error) {
 				fmt.Printf("\n[OpenFilePathExists] Tried creating file @ path but failed %s: %v\n", path, err)
 				return nil, err
 			} else {
-				// Fresh connection
-				f.Close()
-				f, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+				// Fresh connection				
+				if e := f.Close(); e!=nil {
+					fmt.Println("\n[OpenFilePathExists][ERROR]", e)
+				}				
+				f, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600)
 			}
 		}
 	}
