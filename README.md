@@ -11,11 +11,23 @@ Have multiple log destinations in an application, log objects ....
 * The first version was production used by April 2019, Multi threaded one, end Jan 2020.
 * ...On going reviews and testing. Please test and improve ! :)
 
+## Why do you need it?
+I see developers in `golang` struggling to use and then switch between Standard GoLang [log](https://golang.org/pkg/log/), a framework like [logrus](https://github.com/sirupsen/logrus) and even writing prototype code using `fmt`. 
+
+Would it not be nice to log using the `fmt` package standard functions like `Printf`, `Println` in a log agnostic manner that can be backed by the standard `log` package or a framework like `logrus`?
+
+In addition it also allows grouping using:
+* **Context**: Logs and settings specific to a certain logger instance
+* **WriteToBuffer**: Write continuous logs without having your application to maintain context in multi-threaded code
+* **Control log to console and context**: Dont have to repeat logs, sometimes its nice to see something on your screen and file; sometimes one or the other. Easy to toggle.
+
+
 ## Next Steps
-* Add `Appender` Interface
-* Move current Default File writes to a `File Appender` and plug that in as a default
-* Build a `MongoDB Appender`
-* Build a `Fanout Appender` to support joining multiple `Appender`s
+* File writes can be `async`, though currently, one can use `WriteToBuffer` as a decent substitute also to optimize writes.
+* Add `Appender` Interface.
+* Move current Default File writes to a `File Appender` and plug that in as a default.
+* Build a `MongoDB Appender`.
+* Build a `Fanout Appender` to support joining multiple `Appender`s.
 
 ## Usage
 
@@ -199,12 +211,6 @@ func MyLogger(contextID string, taskId string) *log.Logger {
 }
 ```
 The above will ensure a safe virtual environment and buffer for each sub-task, even though they maybe writing to the same file in a process/context.
-
-## Why do I need it?
-I see developers in `golang` struggling to use and then switch between Standard GoLang [log](https://golang.org/pkg/log/), a framework like [logrus](https://github.com/sirupsen/logrus) and even writing prototype code using `fmt`. 
-
-Would it not be nice to log using the `fmt` package standard functions like `Printf`, `Println` in a log agnostic manner that can be backed by the standard `log` package or a framework like `logrus`?
-
 
 ## Getting Started
 See [Usage](#usage)
