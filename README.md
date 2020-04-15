@@ -67,35 +67,37 @@ ok      fmtlogwrapper   0.341s
 ```
 
 ## Multiple Context Loggers
+Maintain multiple contexts to different files, debug levels etc. .. use your imagination. A context is an abstract to group your logs.
+
 ```golang
 func TestMultipleContextLoggers(t *testing.T) {
-	log1 := /*log.*/InitContextLogger("L1", /*log.*/LogSettings{
-		FilePath: ".\\log\\app-1.log",
+	info := /*log.*/InitContextLogger("Info1", /*log.*/LogSettings{
+		FilePath: ".\\log\\app-info.log",
 	})
 
-	log2 := /*log.*/InitContextLogger("L2", /*log.*/LogSettings{
-		FilePath: ".\\log\\app-2.log",
+	debug := /*log.*/InitContextLogger("Debug1", /*log.*/LogSettings{
+		FilePath: ".\\log\\app-debug.log",
 	})
 
-	log1.Println("STEP 11")
-	log2.Println("STEP 12")
+	info.Println("STEP 11")
+	debug.Println("STEP 12")
 
-	log1.MuteWrite(true)
-	log2.MuteWrite(true)
-	log1.Println("STEP 21")  // This wont be written only on console
-	log2.Println("STEP 22")  // This wont be written only on console
+	info.MuteWrite(true)
+	debug.MuteWrite(true)
+	info.Println("STEP 21")  // This wont be written only on console
+	debug.Println("STEP 22")  // This wont be written only on console
 
 	// Test can get it afresh from the context
-	log1 = /*log.*/ContextLoggers()["L1"]
-	log2 = /*log.*/ContextLoggers()["L2"]
+	info = /*log.*/ContextLoggers()["Info1"]
+	debug = /*log.*/ContextLoggers()["Debug1"]
 
-	log1.MuteWrite(false)
-	log2.MuteWrite(false)
-	log1.Println("STEP 31")
-	log2.Println("STEP 32")	
+	info.MuteWrite(false)
+	debug.MuteWrite(false)
+	info.Println("STEP 31")
+	debug.Println("STEP 32")	
 
-	defer /*log.*/log1.Close()
-	defer /*log.*/log2.Close()
+	defer /*log.*/info.Close()
+	defer /*log.*/debug.Close()
 }
 ```
 
