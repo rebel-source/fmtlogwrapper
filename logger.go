@@ -112,7 +112,7 @@ func getWriter(logPath string) (io.Writer, error, *os.File) {
 // depending on what the application is doing : JOB, IDLE, using a PROXY so while closing we dont know
 // So approach nil conditions with caution (redundancy in code is required)
 func (log *Logger) Close() {
-	//Ensure any uncomitted stuff lingering in buffer, is committed
+	//Ensure any uncommitted stuff lingering in buffer, is committed
 	if len(log.buffer) > 0 {
 		log.CommitBuffer()
 	}
@@ -174,7 +174,7 @@ func (log *Logger) Open() {
 	}
 }
 
-// Can supress logging to File while write_muted
+// Can suppress logging to File while write_muted
 func (log *Logger) MuteWrite(mute bool) {
 	log.write_muted = mute
 }
@@ -305,7 +305,7 @@ func (log *Logger) ClearBuffer() {
 }
 
 /*
- Will commit any logs in buffer. Is thread safe and uses a mutex over the buffer while comitting.
+ Will commit any logs in buffer. Is thread safe and uses a mutex over the buffer while committing.
  This will override write to disk "Logger.write_muted" flag; even if write_muted = true, this will write to Disk
 
  @see https://gophers.slack.com/archives/C029RQSEE/p1581069207209700

@@ -1,5 +1,7 @@
 package fmtlogwrapper
 
+// Also run this through : https://goreportcard.com/report/github.com/rebel-source/fmtlogwrapper
+
 import (
 	"testing"
 	//log "fmtlogwrapper"
@@ -89,7 +91,7 @@ func TestBufferedLogger(t *testing.T) {
 
 	log1.WriteToBuffer(false)
 	log2.WriteToBuffer(false)
-	// At this point buffer so far should be comitted but logs for 1 & 2 should be visible in continious lines for each group
+	// At this point buffer so far should be committed but logs for 1 & 2 should be visible in continuous lines for each group
 	// We can also explicitly call log<x>.CommitBuffer()
 
 	//Now on will appear in sequence of this being written
