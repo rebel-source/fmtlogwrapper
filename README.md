@@ -2,6 +2,7 @@
 # `fmt` `Log` Wrapper
 
 <!-- shields.io - https://shields.io/category/analysis -->
+[![Go Report Card](https://goreportcard.com/badge/github.com/rebel-source/fmtlogwrapper)](https://goreportcard.com/report/github.com/rebel-source/fmtlogwrapper)
 ![GoSec Verified](https://img.shields.io/badge/gosec-verified-brightgreen)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/rebel-source/fmtlogwrapper)
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/rebel-source/fmtlogwrapper)
