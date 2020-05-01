@@ -30,10 +30,10 @@ func OpenFilePathExists(path string) (*os.File, error) {
 				fmt.Printf("\n[OpenFilePathExists] Tried creating file @ path but failed %s: %v\n", path, err)
 				return nil, err
 			} else {
-				// Fresh connection				
-				if e := f.Close(); e!=nil {
+				// Fresh connection
+				if e := f.Close(); e != nil {
 					fmt.Println("\n[OpenFilePathExists][ERROR]", e)
-				}				
+				}
 				f, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600) //0666
 			}
 		}

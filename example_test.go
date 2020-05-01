@@ -1,6 +1,6 @@
 package fmtlogwrapper
 
-import(
+import (
 	"testing"
 	//log "fmtlogwrapper"
 	"fmt"
@@ -8,16 +8,18 @@ import(
 
 func TestUsage1(t *testing.T) {
 
-	// Note One can define multiple logger instances. This is the default a "singleton" instance; 
+	// Note One can define multiple logger instances. This is the default a "singleton" instance;
 	// but nothing stopping you from defining many.if you have a specific reason to have another instance.
 	// TIP: Re-use logger instances if they are outputting to the same destination (file or DB)
 
-	/*log.*/AppLogger = /*log.*/NewLogger(/*log.*/LogSettings{
+	/*log.*/
+	AppLogger = /*log.*/ NewLogger( /*log.*/ LogSettings{
 		FilePath: ".\\log\\app.log",
 	})
 
 	// Simple Printf ...& Println, Errorf  similarly
-	/*log.*/AppLogger.Printf("\nRunning version %s\n", "xyz") // See how `/*log.*/AppLogger` is a simple replacement for `fmt` so Replace-ALL away :)
+	/*log.*/
+	AppLogger.Printf("\nRunning version %s\n", "xyz") // See how `/*log.*/AppLogger` is a simple replacement for `fmt` so Replace-ALL away :)
 
 	//Log an Object - JSON
 	logRec := make(map[string]interface{})
@@ -26,17 +28,17 @@ func TestUsage1(t *testing.T) {
 	keyAsMap["data"] = "ABC-123"
 	keyAsMap["msg"] = "Nice to see you here :)"
 	logRec["key-map"] = keyAsMap
-	/*log.*/AppLogger.Log(logRec)	
+	/*log.*/ AppLogger.Log(logRec)
 
-	defer /*log.*/AppLogger.Close()
+	defer /*log.*/ AppLogger.Close()
 }
 
 func TestMultipleContextLoggers(t *testing.T) {
-	log1 := /*log.*/InitContextLogger("L1", /*log.*/LogSettings{
+	log1 := /*log.*/ InitContextLogger("L1" /*log.*/, LogSettings{
 		FilePath: ".\\log\\app-1.log",
 	})
 
-	log2 := /*log.*/InitContextLogger("L2", /*log.*/LogSettings{
+	log2 := /*log.*/ InitContextLogger("L2" /*log.*/, LogSettings{
 		FilePath: ".\\log\\app-2.log",
 	})
 
@@ -45,34 +47,33 @@ func TestMultipleContextLoggers(t *testing.T) {
 
 	log1.MuteWrite(true)
 	log2.MuteWrite(true)
-	log1.Println("STEP 1-B")  // This wont be written only on console
-	log2.Println("STEP 2-B")  // This wont be written only on console
+	log1.Println("STEP 1-B") // This wont be written only on console
+	log2.Println("STEP 2-B") // This wont be written only on console
 
 	// Test can get it afresh from the context
-	log1 = /*log.*/ContextLoggers()["L1"]
-	log2 = /*log.*/ContextLoggers()["L2"]
+	log1 = /*log.*/ ContextLoggers()["L1"]
+	log2 = /*log.*/ ContextLoggers()["L2"]
 
 	log1.MuteWrite(false)
 	log2.MuteWrite(false)
 	log1.Println("STEP 1-C")
-	log2.Println("STEP 2-C")	
+	log2.Println("STEP 2-C")
 
-	defer /*log.*/log1.Close()
-	defer /*log.*/log2.Close()
+	defer /*log.*/ log1.Close()
+	defer /*log.*/ log2.Close()
 }
 
-
 func TestBufferedLogger(t *testing.T) {
-	fmt.Println("[TesBufferedLogger]");
+	fmt.Println("[TesBufferedLogger]")
 	/*
 	 We have 2 loggers writing to the same file
 	 We want to ensure a Atomic operation in each does not mix with the other
 	*/
 
-	log1 := /*log.*/InitContextLogger("L1", /*log.*/LogSettings{
+	log1 := /*log.*/ InitContextLogger("L1" /*log.*/, LogSettings{
 		FilePath: ".\\log\\app-same.log",
 	})
-	log2 := /*log.*/InitContextLogger("L2", /*log.*/LogSettings{
+	log2 := /*log.*/ InitContextLogger("L2" /*log.*/, LogSettings{
 		FilePath: ".\\log\\app-same.log",
 	})
 
@@ -84,7 +85,7 @@ func TestBufferedLogger(t *testing.T) {
 	log1.Println("STEP 1-B")
 	log2.Println("STEP 2-B")
 	log1.Println("STEP 1-C")
-	log2.Println("STEP 2-C")	
+	log2.Println("STEP 2-C")
 
 	log1.WriteToBuffer(false)
 	log2.WriteToBuffer(false)
@@ -97,8 +98,8 @@ func TestBufferedLogger(t *testing.T) {
 	log1.Println("STEP 1-E")
 	log2.Println("STEP 2-E")
 
-	defer /*log.*/log1.Close() //If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
-	defer /*log.*/log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.	
+	defer /*log.*/ log1.Close() //If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
+	defer /*log.*/ log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.
 }
 
 // TODO: Add test for When switching from Buffered mode to non-buffered

@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 	"sync"
+	"time"
 
 	rlog "log"
 
@@ -41,12 +41,12 @@ type Logger struct {
 	file     *os.File
 	writer   io.Writer
 
-	write_muted 	 bool
-	console_muted	 bool
+	write_muted   bool
+	console_muted bool
 
-	buffered bool // if true, will add to buffer and only write on Commit or Close
+	buffered  bool       // if true, will add to buffer and only write on Commit or Close
 	bufferMux sync.Mutex // Lock on the buffer
-	buffer	string //TODO: Ability to link this to some sort of IMDG 
+	buffer    string     //TODO: Ability to link this to some sort of IMDG
 }
 
 // Despite all other aspects; its still possible that while 2 Logger instances
@@ -139,10 +139,10 @@ func (log *Logger) Close() {
 		log.Settings.Proxy = nil
 	}
 	if log != nil && log.file != nil {
-		if e := log.file.Close(); e!=nil { // since we need to close Proxy logger also
+		if e := log.file.Close(); e != nil { // since we need to close Proxy logger also
 			fmt.Println("\n[Logger][Close][ERROR]", e)
 		}
-	}	
+	}
 }
 
 func (log *Logger) GetProxy() ProxyLogger {
@@ -220,7 +220,7 @@ func (log *Logger) Log(logRec map[string]interface{}) {
 }
 
 /*
- If Logger.buffered is true will write to Logger.buffer (respecting Logger.bufferMux) 
+ If Logger.buffered is true will write to Logger.buffer (respecting Logger.bufferMux)
  and return true
 */
 func (log *Logger) printfToBuffer(str string, params ...interface{}) bool {
@@ -234,6 +234,7 @@ func (log *Logger) printfToBuffer(str string, params ...interface{}) bool {
 		return false
 	}
 }
+
 //TODO: Combine above 2, almost same code. mak it more elegant.
 func (log *Logger) printlnToBuffer(strs ...interface{}) bool {
 	if log.buffered {
@@ -250,7 +251,7 @@ func (log *Logger) printlnToBuffer(strs ...interface{}) bool {
 }
 
 func (log *Logger) LogStr(str string) {
-	if  !log.write_muted {
+	if !log.write_muted {
 		log.rlogger.Println(str)
 	}
 }
@@ -262,7 +263,7 @@ func (log *Logger) Printf(str string, params ...interface{}) {
 	if !log.console_muted {
 		fmt.Printf(str, params...) //Send to std console always
 	}
-	if  !log.write_muted && !log.printfToBuffer(str, params...) {
+	if !log.write_muted && !log.printfToBuffer(str, params...) {
 		log.rlogger.Printf(str, params...)
 	}
 }
@@ -272,18 +273,18 @@ func (log *Logger) Println(a ...interface{}) {
 	if !log.console_muted {
 		fmt.Println(a...) //Send to std console always
 	}
-	if  !log.write_muted && !log.printlnToBuffer(a...) {
+	if !log.write_muted && !log.printlnToBuffer(a...) {
 		log.rlogger.Println(a...)
 	}
 }
 
 func (log *Logger) Errorf(str string, params ...interface{}) {
-	if !log.console_muted {		
-		if e := fmt.Errorf(str, params...); e!=nil {
+	if !log.console_muted {
+		if e := fmt.Errorf(str, params...); e != nil {
 			fmt.Println("\n[Logger][Errorf][ERROR]", e)
-		}		
+		}
 	}
-	if  !log.write_muted && !log.printfToBuffer(str, params...) {
+	if !log.write_muted && !log.printfToBuffer(str, params...) {
 		log.rlogger.Fatalf(str, params...)
 	}
 }
@@ -298,7 +299,6 @@ type ProxyLogger interface {
 	Close() error
 }
 
-
 /////////////////////////////// Buffering + Commit
 func (log *Logger) ClearBuffer() {
 	log.buffer = ""
@@ -310,20 +310,19 @@ func (log *Logger) ClearBuffer() {
 
  @see https://gophers.slack.com/archives/C029RQSEE/p1581069207209700
 */
-func (log *Logger) CommitBuffer() {	
+func (log *Logger) CommitBuffer() {
 	log.bufferMux.Lock()
 	var targetMux sync.Mutex = sameTargetMutextMap[log.Settings.FilePath]
 	targetMux.Lock()
 	defer targetMux.Unlock()
 	defer log.bufferMux.Unlock()
 	log.rlogger.Println(log.buffer)
-	log.ClearBuffer()	
+	log.ClearBuffer()
 }
 
 func (log *Logger) GetBuffer() string {
 	return log.buffer
 }
-
 
 /*
  Buffer write is not intended to be thread safe. If you need it, make your own wrapper.
@@ -332,26 +331,24 @@ func (log *Logger) WriteToBuffer(toBuffer bool) {
 	log.buffered = toBuffer
 	if !toBuffer {
 		// no longer writing to buffer so commit any state instantly
-		log.CommitBuffer()		
+		log.CommitBuffer()
 	}
 }
 
 /////////////////////////////// Multiple Loggers
 var loggers map[string]*Logger = make(map[string]*Logger)
 
-
 /*
  Maintains a reference to the logger within the logger framework
 */
 func InitContextLogger(contextId string, settings LogSettings) *Logger {
-	if loggers[contextId]!= nil {
+	if loggers[contextId] != nil {
 		fmt.Printf("\n[WARN][Logger][InitContextLogger]Logger with contextId %s was previously also assigned. Check your code for mutiple InitContextLogger in the same Context", contextId)
 	}
 	logger := NewLogger(settings)
 	loggers[contextId] = logger
 	return logger
 }
-
 
 /*
  Take al lthe references and do what you want ! Be Happy!
