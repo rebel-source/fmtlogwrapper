@@ -95,7 +95,7 @@ func NewLogger(settings LogSettings) *Logger {
 
 func getWriter(logPath string) (io.Writer, error, *os.File) {
 	f, err := OpenFilePathExists(logPath)
-	var w io.Writer = nil
+	var w io.Writer
 	if err != nil {
 		//rlog.Fatalf("[GetRegularLogger] error opening file: %v", err)
 		fmt.Printf("\n[Logger][getWriter] error opening file %s: %v. Dumping logs on screen...\n", logPath, err)
