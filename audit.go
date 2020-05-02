@@ -14,8 +14,6 @@ import (
 
 	"crypto/sha1"
 	"encoding/base64"
-
-	log "github.com/rebel-source/fmtlogwrapper"
 )
 
 func Now() string {

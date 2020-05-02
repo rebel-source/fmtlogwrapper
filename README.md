@@ -39,6 +39,10 @@ In addition it also allows grouping using:
 
 ## Usage
 
+```bash
+go get -u -v github.com/rebel-source/fmtlogwrapper
+```
+
 ### Simple
 ```golang
 import(
