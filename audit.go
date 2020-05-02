@@ -49,14 +49,14 @@ func Audit(any interface{}) string {
 
  @param path string (optional). Defaults to ".\log"
 */
-func InitAuditLogger(namespace string, processID string, taskId string, path string) *log.Logger {
+func InitAuditLogger(namespace string, processID string, taskId string, path string) *Logger {
 	if path == "" {
 		path = ".\\log\\"
 	}
-	logger := log.NewLogger(log.LogSettings{
+	logger := NewLogger(LogSettings{
 		FilePath: path + namespace + "-" + processID + ".json",
 	})
-	log.ContextLoggers()[processID+"."+taskId] = logger
+	ContextLoggers()[processID+"."+taskId] = logger
 	return logger
 }
 
@@ -71,8 +71,8 @@ func InitAuditLogger(namespace string, processID string, taskId string, path str
 
  @param path string (optional). Defaults to ".\log"
 */
-func AuditLogger(namespace string, processID string, taskId string, path string) *log.Logger {
-	logger := log.ContextLoggers()[processID+"."+taskId]
+func AuditLogger(namespace string, processID string, taskId string, path string) *Logger {
+	logger := ContextLoggers()[processID+"."+taskId]
 	if logger == nil {
 		logger = InitAuditLogger(namespace, processID, taskId, path)
 	}
@@ -83,7 +83,7 @@ func AuditLogger(namespace string, processID string, taskId string, path string)
 	return logger
 }
 
-func AuditToDiskAndClose(audit *log.Logger) {
+func AuditToDiskAndClose(audit *Logger) {
 	audit.MuteWrite(true) // Dont want the close statement logged
 	audit.Close()         //auto-commits buffer
 	audit.MuteWrite(false)
