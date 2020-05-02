@@ -104,4 +104,29 @@ func TestBufferedLogger(t *testing.T) {
 	defer /*log.*/ log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.
 }
 
+func TestChainLogger(t *testing.T) {
+	fmt.Println("[TestChainLogger]")
+
+	log := /*log.*/ InitContextLogger("L1" /*log.*/, LogSettings{
+		FilePath: ".\\log\\app-same.log",
+	})
+
+	s := struct {
+		x1 int
+		x2 int
+	}{
+		x1: 1,
+		x2: 2,
+	}
+	s = log.LogChain(s).(struct {
+		x1 int
+		x2 int
+	})
+
+	m := make(map[string]interface{})
+	m["m1"] = 1
+	m["m2"] = 2
+	m = log.LogChain(m).(map[string]interface{})
+}
+
 // TODO: Add test for When switching from Buffered mode to non-buffered

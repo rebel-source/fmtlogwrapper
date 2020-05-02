@@ -256,6 +256,16 @@ func (log *Logger) LogStr(str string) {
 	}
 }
 
+/*
+A chain that allows to log multiple objects and return the original object passed unchanged
+*/
+func (log *Logger) LogChain(obj interface{}) interface{} {
+	if !log.write_muted {
+		log.rlogger.Println(fmt.Sprintf("%v", obj))
+	}
+	return obj
+}
+
 // Following serves as a convenient replacement for fmt.<...>
 
 // Replacement for fmt.Printf
