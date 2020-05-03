@@ -39,9 +39,21 @@ func Audit(any interface{}) string {
 }
 
 /*
+ For Context buffer under one context defined typically by processId + taskId;
+ however if there is no process or task, then default to namespace.
+*/
+func getContextId(namespace string, processId string, taskId string) string {
+	ctxId := processId + "." + taskId
+	if processId == "" && taskId == "" {
+		ctxId = namespace
+	}
+	return ctxId
+}
+
+/*
  @param namespace string - will decide the file name
 
- @param processID string (optional)- file name depends on this
+ @param processId string (optional)- file name depends on this
 
  @param taskId string (optional) - Allows multiple processes to write to same file;
  however if we plan to use buffered mode, then each can independently maintain its own buffer.
@@ -49,25 +61,26 @@ func Audit(any interface{}) string {
 
  @param path string (optional). Defaults to ".\log"
 */
-func InitAuditLogger(namespace string, processID string, taskId string, path string) *Logger {
+func InitAuditLogger(namespace string, processId string, taskId string, path string) *Logger {
 	if path == "" {
 		path = ".\\log\\"
 	}
-	if processID != "" {
+	pid := processId
+	if processId != "" {
 		// Address dangling -, if blank
-		processID = "-" + processID
+		pid = "-" + processId
 	}
 	logger := NewLogger(LogSettings{
-		FilePath: path + namespace + processID + ".json",
+		FilePath: path + namespace + pid + ".json",
 	})
-	ContextLoggers()[processID+"."+taskId] = logger
+	ContextLoggers()[getContextId(namespace, processId, taskId)] = logger
 	return logger
 }
 
 /*
  @param namespace string - will decide the file name
 
- @param processID string (optional)- file name depends on this
+ @param processId string (optional)- file name depends on this
 
  @param taskId string (optional) - Allows multiple processes to write to same file;
  however if we plan to use buffered mode, then each can independently maintain its own buffer.
@@ -75,10 +88,10 @@ func InitAuditLogger(namespace string, processID string, taskId string, path str
 
  @param path string (optional). Defaults to ".\log"
 */
-func AuditLogger(namespace string, processID string, taskId string, path string) *Logger {
-	logger := ContextLoggers()[processID+"."+taskId]
+func AuditLogger(namespace string, processId string, taskId string, path string) *Logger {
+	logger := ContextLoggers()[getContextId(namespace, processId, taskId)]
 	if logger == nil {
-		logger = InitAuditLogger(namespace, processID, taskId, path)
+		logger = InitAuditLogger(namespace, processId, taskId, path)
 	} else {
 		logger.Open()
 	}
