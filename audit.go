@@ -57,7 +57,7 @@ func InitAuditLogger(namespace string, processID string, taskId string, path str
 		// Address dangling -, if blank
 		processID = "-" + processID
 	}
-	logger := NewLogger(LogSettings{		
+	logger := NewLogger(LogSettings{
 		FilePath: path + namespace + processID + ".json",
 	})
 	ContextLoggers()[processID+"."+taskId] = logger
@@ -79,6 +79,8 @@ func AuditLogger(namespace string, processID string, taskId string, path string)
 	logger := ContextLoggers()[processID+"."+taskId]
 	if logger == nil {
 		logger = InitAuditLogger(namespace, processID, taskId, path)
+	} else {
+		logger.Open()
 	}
 	//Common settings for most audit operations
 	logger.WriteToBuffer(true)

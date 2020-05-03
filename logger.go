@@ -266,7 +266,10 @@ func (log *Logger) LogChain(obj interface{}, formatter func(interface{}) string)
 		}
 	}
 	if !log.write_muted {
-		log.rlogger.Println(formatter(obj))
+		str := formatter(obj)
+		if !log.write_muted && !log.printfToBuffer(str) {
+			log.rlogger.Println(str)
+		}
 	}
 	return obj
 }
