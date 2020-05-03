@@ -118,7 +118,7 @@ func TestChainLogger(t *testing.T) {
 		x1: 1,
 		x2: 2,
 	}
-	s = log.LogChain(s).(struct {
+	s = log.LogChain(s, nil /*formatter*/).(struct {
 		x1 int
 		x2 int
 	})
@@ -126,7 +126,7 @@ func TestChainLogger(t *testing.T) {
 	m := make(map[string]interface{})
 	m["m1"] = 1
 	m["m2"] = 2
-	m = log.LogChain(m).(map[string]interface{})
+	m = log.LogChain(m, nil /*formatter*/).(map[string]interface{})
 }
 
 // TODO: Add test for When switching from Buffered mode to non-buffered

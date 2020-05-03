@@ -259,9 +259,14 @@ func (log *Logger) LogStr(str string) {
 /*
 A chain that allows to log multiple objects and return the original object passed unchanged
 */
-func (log *Logger) LogChain(obj interface{}) interface{} {
+func (log *Logger) LogChain(obj interface{}, formatter func(interface{}) string) interface{} {
+	if formatter == nil {
+		formatter = func(o interface{}) string {
+			return fmt.Sprintf("%v", o)
+		}
+	}
 	if !log.write_muted {
-		log.rlogger.Println(fmt.Sprintf("%v", obj))
+		log.rlogger.Println(formatter(obj))
 	}
 	return obj
 }
