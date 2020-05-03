@@ -53,8 +53,12 @@ func InitAuditLogger(namespace string, processID string, taskId string, path str
 	if path == "" {
 		path = ".\\log\\"
 	}
-	logger := NewLogger(LogSettings{
-		FilePath: path + namespace + "-" + processID + ".json",
+	if processID != "" {
+		// Address dangling -, if blank
+		processID = "-" + processID
+	}
+	logger := NewLogger(LogSettings{		
+		FilePath: path + namespace + processID + ".json",
 	})
 	ContextLoggers()[processID+"."+taskId] = logger
 	return logger
