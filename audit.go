@@ -3,6 +3,9 @@ package fmtlogwrapper
 /*
 An Audit wrapper over the logger to provide some standard OOB Auditing features.
 
+THIS IS TEMPLATE / SAMPLE CODE, TYPICALLY AUDIT MAY ASSUME CUSTOM NEEDS SO IT IS RECOMMENDED
+YOU SUE THIS FILE AND CAN MODIFY IT AND CSUTOMIZE IT TO PROJECT.
+
 
 @author Arjun Dhar
 */
@@ -38,6 +41,10 @@ func Audit(any interface{}) string {
 	return string(b)
 }
 
+// Audit files can get large require scrolling to the end; so lets introduce some MARKER INDEX
+// to display in our files that give context to recent additions real time , to eye ball easier
+var globalAuditIndex = 0
+
 /*
  For Context buffer under one context defined typically by processId + taskId;
  however if there is no process or task, then default to namespace.
@@ -63,7 +70,7 @@ func getContextId(namespace string, processId string, taskId string) string {
 */
 func InitAuditLogger(namespace string, processId string, taskId string, path string) *Logger {
 	if path == "" {
-		path = ".\\log\\"
+		path = "./log/"
 	}
 	pid := processId
 	if processId != "" {
@@ -92,19 +99,25 @@ func AuditLogger(namespace string, processId string, taskId string, path string)
 	logger := ContextLoggers()[getContextId(namespace, processId, taskId)]
 	if logger == nil {
 		logger = InitAuditLogger(namespace, processId, taskId, path)
-	} else {
+	} /* else {
 		logger.Open()
-	}
+	}*/
 	//Common settings for most audit operations
 	logger.WriteToBuffer(true)
 	logger.MuteConsole(true)
 	logger.Settings.JobRecMeta = namespace
+
+	// Make it convenient to eyeball
+	globalAuditIndex = globalAuditIndex + 1
+	logger.Printf("\n\n[%s][%s %s][# %d] -----------------------------------------------------------------------------------\n", namespace, processId, taskId, globalAuditIndex)
+
 	return logger
 }
 
-func AuditToDiskAndClose(audit *Logger) {
+func Persist(audit *Logger) {
 	audit.MuteWrite(true) // Dont want the close statement logged
-	audit.Close()         //auto-commits buffer
+	audit.CommitBuffer()  // if not using Close() then atleast commit
+	// audit.Close()         //auto-commits buffer
 	audit.MuteWrite(false)
 }
 
@@ -115,3 +128,6 @@ func GenSHA(any interface{}) string {
 	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 	return sha
 }
+
+//TODO: Add test case to ensure when processId, taskId are BLANK (""), then its still creating different files / contexts for each file.
+//TODO: On repeated CLOSE + OPEN there is no problem.

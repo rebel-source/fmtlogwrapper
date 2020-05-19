@@ -93,8 +93,17 @@ func NewLogger(settings LogSettings) *Logger {
 	return l
 }
 
+var createWriterMutex = &sync.Mutex{}
+
 func getWriter(logPath string) (io.Writer, error, *os.File) {
+	createWriterMutex.Lock()
 	f, err := OpenFilePathExists(logPath)
+	createWriterMutex.Unlock()
+
+	if panic := recover(); panic != nil { // Trap `sync.runtime_SemacquireMutex` panic on Lock()
+		err, _ = panic.(error)
+	}
+
 	var w io.Writer
 	if err != nil {
 		//rlog.Fatalf("[GetRegularLogger] error opening file: %v", err)

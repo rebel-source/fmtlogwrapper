@@ -6,6 +6,9 @@ import (
 	"testing"
 	//log "fmtlogwrapper"
 	"fmt"
+	"strconv"
+	"sync"
+	"time"
 )
 
 func TestUsage1(t *testing.T) {
@@ -127,6 +130,51 @@ func TestChainLogger(t *testing.T) {
 	m["m1"] = 1
 	m["m2"] = 2
 	m = log.LogChain(m, nil /*formatter*/).(map[string]interface{})
+}
+
+/*
+ Test multiple Open close Inits
+*/
+func TestOpenClose(t *testing.T) {
+	fmt.Println("\n[TestOpenClose]")
+
+	var wg sync.WaitGroup
+
+	for x := 1; x < 160; x++ {
+		xStr := strconv.Itoa(x)
+		wg.Add(1)
+		go func() {
+			fmt.Println("\n[TestOpenClose] Starting Thread " + xStr)
+			log := /*log.*/ InitContextLogger("L"+xStr /*log.*/, LogSettings{
+				FilePath: ".\\log\\app-same.log",
+			})
+			//log.WriteToBuffer(true)
+			log.Println("[" + xStr + "] A")
+			time.Sleep(50 * time.Millisecond)
+			log.Println("[" + xStr + "] B")
+			time.Sleep(50 * time.Millisecond)
+
+			log = /*log.*/ ContextLoggers()["L"+xStr] //Test getting ContextLogger also in concurrent scenario
+			log = /*log.*/ InitContextLogger("L"+xStr /*log.*/, LogSettings{
+				FilePath: ".\\log\\app-same.log",
+			})
+
+			log.Println("[" + xStr + "] C")
+			time.Sleep(50 * time.Millisecond)
+			log.Println("[" + xStr + "] D")
+			time.Sleep(50 * time.Millisecond)
+			log.Println("[" + xStr + "] E")
+			time.Sleep(50 * time.Millisecond)
+			log.Println("[" + xStr + "] F")
+			time.Sleep(50 * time.Millisecond)
+			//log.CommitBuffer()
+			//log.Close() Cant close because it shares the file handle with other threads
+
+			wg.Done()
+		}()
+	} //end-for
+
+	wg.Wait()
 }
 
 // TODO: Add test for When switching from Buffered mode to non-buffered
