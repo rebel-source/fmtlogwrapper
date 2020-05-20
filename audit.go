@@ -10,6 +10,27 @@ YOU SUE THIS FILE AND CAN MODIFY IT AND CSUTOMIZE IT TO PROJECT.
 @author Arjun Dhar
 */
 
+/*
+Sample Usage:
+
+	audit := lib.AuditLogger("File-Name-Space", 
+		                     processIdOptional, 
+		                     taskIdOptional, 
+		                     pathThatCanBeBlank)
+	defer func() {
+		lib.Persist(audit)
+	}()
+
+	// Simple fmt replacements
+	audit.Println(….); // Like fmt.Println
+	audit.Printf(…);   // Exactly like fmt.Printf
+	// etc
+
+	// Inline substitution without changing breaking code in complex cases
+	// Sometimes 
+	f(someFuncThatReturnsString()) --> // f(audit.LogChain(someFuncThatReturnsString()))
+*/
+
 import (
 	"encoding/json"
 	"fmt"

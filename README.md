@@ -224,6 +224,11 @@ func MyLogger(contextID string, taskId string) *log.Logger {
 ```
 The above will ensure a safe virtual environment and buffer for each sub-task, even though they maybe writing to the same file in a process/context.
 
+## Audit
+Audit is not a formal `drop-in` code but a sample provided in [audit.go](audit.go).
+
+Since this is a sample wrapper code over the logger, you can use it as a sample and it contains usage also. For those who dont need much customization, can use it readliy also.
+
 ## Getting Started
 See [Usage](#usage)
 
