@@ -156,7 +156,8 @@ func TestBufferedLogger(t *testing.T) {
 
 	// In buffered mode, the logs are maintained in memory per context.
 	// commit() it often @ logical points as a good practice.
-	// Note: There is also a practical limit to the buffer; however that can be overome by hooking the boffer to a another store (not directly to memory)
+	// Note: There is also a practical limit to the buffer; however that can be overome by 
+	// hooking the buffer to a another store (not directly to memory).
 	//
 	// log2.CommitBuffer()
 
