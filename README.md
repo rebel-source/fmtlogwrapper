@@ -103,6 +103,8 @@ func TestMultipleContextLoggers(t *testing.T) {
 	debug := /*log.*/InitContextLogger("Debug1", /*log.*/LogSettings{
 		FilePath: ".\\log\\app-debug.log",
 	})
+	defer /*log.*/info.Close()
+	defer /*log.*/debug.Close()	
 
 	info.Println("STEP 11")
 	debug.Println("STEP 12")
@@ -119,10 +121,7 @@ func TestMultipleContextLoggers(t *testing.T) {
 	info.MuteWrite(false)
 	debug.MuteWrite(false)
 	info.Println("STEP 31")
-	debug.Println("STEP 32")	
-
-	defer /*log.*/info.Close()
-	defer /*log.*/debug.Close()
+	debug.Println("STEP 32")
 }
 ```
 
@@ -141,6 +140,10 @@ func TestBufferedLogger(t *testing.T) {
 	log2 := /*log.*/InitContextLogger("L2", /*log.*/LogSettings{
 		FilePath: ".\\log\\app-same.log",
 	})
+	
+	// Once we are done - Close
+	defer /*log.*/log1.Close() //Note: If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
+	defer /*log.*/log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.	
 
 	log1.WriteToBuffer(true)
 	log2.WriteToBuffer(true)
@@ -171,10 +174,6 @@ func TestBufferedLogger(t *testing.T) {
 	log2.Println("STEP 2-D")
 	log1.Println("STEP 1-E")
 	log2.Println("STEP 2-E")
-
-	// Once we are done - Close
-	defer /*log.*/log1.Close() //Note: If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
-	defer /*log.*/log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.
 }
 ```
 

@@ -47,6 +47,9 @@ func TestMultipleContextLoggers(t *testing.T) {
 		FilePath: ".\\log\\app-2.log",
 	})
 
+	defer /*log.*/ log1.Close()
+	defer /*log.*/ log2.Close()	
+
 	log1.Println("STEP 1-A")
 	log2.Println("STEP 2-A")
 
@@ -63,9 +66,6 @@ func TestMultipleContextLoggers(t *testing.T) {
 	log2.MuteWrite(false)
 	log1.Println("STEP 1-C")
 	log2.Println("STEP 2-C")
-
-	defer /*log.*/ log1.Close()
-	defer /*log.*/ log2.Close()
 }
 
 func TestBufferedLogger(t *testing.T) {
@@ -82,6 +82,10 @@ func TestBufferedLogger(t *testing.T) {
 		FilePath: ".\\log\\app-same.log",
 	})
 
+	// Once we are done - Close
+	defer /*log.*/log1.Close() //Note: If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
+	defer /*log.*/log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.	
+
 	log1.WriteToBuffer(true)
 	log2.WriteToBuffer(true)
 
@@ -91,6 +95,15 @@ func TestBufferedLogger(t *testing.T) {
 	log2.Println("STEP 2-B")
 	log1.Println("STEP 1-C")
 	log2.Println("STEP 2-C")
+
+	// Optional and recommended for Buffer mode
+
+	// In buffered mode, the logs are maintained in memory per context.
+	// commit() it often @ logical points as a good practice.
+	// Note: There is also a practical limit to the buffer; however that can be overome by 
+	// hooking the buffer to a another store (not directly to memory).
+	//
+	// log2.CommitBuffer()	
 
 	log1.WriteToBuffer(false)
 	log2.WriteToBuffer(false)
@@ -102,9 +115,6 @@ func TestBufferedLogger(t *testing.T) {
 	log2.Println("STEP 2-D")
 	log1.Println("STEP 1-E")
 	log2.Println("STEP 2-E")
-
-	defer /*log.*/ log1.Close() //If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
-	defer /*log.*/ log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.
 }
 
 func TestChainLogger(t *testing.T) {
