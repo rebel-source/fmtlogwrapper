@@ -31,11 +31,12 @@ In addition it also allows grouping using:
 
 
 ## Next Steps
-* File writes can be `async`, though currently, one can use `WriteToBuffer` as a decent substitute also to optimize writes.
+* allow `Buffer` to be a `interface` so optionally one can hook buffering to a Store/Persistence so buffer is not just going into RAM.
 * Add `Appender` Interface.
 * Move current Default File writes to a `File Appender` and plug that in as a default.
 * Build a `MongoDB Appender`.
 * Build a `Fanout Appender` to support joining multiple `Appender`s.
+* *Note needed anymore* : File writes can be `async`, though currently, one can use `WriteToBuffer` as a decent substitute also to optimize writes.
 
 ## Usage
 
@@ -125,7 +126,7 @@ func TestMultipleContextLoggers(t *testing.T) {
 }
 ```
 
-## Logging in a Multi Threaded environment
+## Logging in a Multi Threaded environment using Buffers
 ```golang
 func TestBufferedLogger(t *testing.T) {
 	fmt.Println("[TesBufferedLogger]");
@@ -151,6 +152,14 @@ func TestBufferedLogger(t *testing.T) {
 	log1.Println("STEP 1-C")
 	log2.Println("STEP 2-C")	
 
+	// Optional and recommended for Buffer mode
+
+	// In buffered mode, the logs are maintained in memory per context.
+	// commit() it often @ logical points as a good practice.
+	// Note: There is also a practical limit to the buffer; however that can be overome by hooking the boffer to a another store (not directly to memory)
+	//
+	// log2.CommitBuffer()
+
 	log1.WriteToBuffer(false)
 	log2.WriteToBuffer(false)
 	// At this point buffer so far should be comitted but logs for 1 & 2 should be visible in continious lines for each group
@@ -162,7 +171,8 @@ func TestBufferedLogger(t *testing.T) {
 	log1.Println("STEP 1-E")
 	log2.Println("STEP 2-E")
 
-	defer /*log.*/log1.Close() //If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
+	// Once we are done - Close
+	defer /*log.*/log1.Close() //Note: If buffered was true, will also automatically CommitBuffer() any pending stuff. FYI
 	defer /*log.*/log2.Close() //Note: Multiple calls to Close() even if they share the same file is ok.
 }
 ```
