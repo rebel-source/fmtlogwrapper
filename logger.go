@@ -320,6 +320,11 @@ func (log *Logger) Errorf(str string, params ...interface{}) {
 type ProxyLogger interface {
 	Init() error
 
+	/*
+		 @param logRec : gets converted to JSON.
+			 @key: string
+			 @value: string, slice, another map
+	*/
 	Log(logRec map[string]interface{}) error
 
 	//Any closingoperations on the proxy
