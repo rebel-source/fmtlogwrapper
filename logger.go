@@ -384,6 +384,9 @@ func InitContextLogger(contextId string, settings LogSettings) *Logger {
 
 /*
  Take al lthe references and do what you want ! Be Happy!
+
+ Important Note: The standard `map` is not safe for concent use, so implement your own `sync.Mutex` or `sync.RWMutex` to write/access it.
+ To avoid `fatal error: concurrent map writes` in some situations.
 */
 func ContextLoggers() map[string]*Logger {
 	return loggers
